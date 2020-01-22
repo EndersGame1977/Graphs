@@ -1,5 +1,5 @@
 
-from util import Stack
+from util import Queue
 
 
 class Graph:
@@ -39,43 +39,33 @@ def earliest_ancestor(ancestors, starting_node):
         graph.add_vertex(node[0])
         # Child
         graph.add_vertex(node[1])
-
-    # Create edges
-    for node in ancestors:
+        # Build edges in reverse
         graph.add_edge(node[1], node[0])
 
-    # ANCHOR: Start DFS with starting node
+    # ANCHOR: Start BFS with starting node
 
-    # Instantiate stack from util.
-    stack = Stack()
+    # Instantiate queue from util.
+    queue = Queue()
 
-    # Stack will hold a tuple (current node, path)
-    stack.push([starting_node])
+    # queue will hold a tuple (current node, path)
+    queue.enqueue([starting_node])
+    max_path_len = 1
+    earliest_ancestor = -1
 
-    # Visited holds node that has been visited as well as the path to get there
-    visited = set()
+    # While the queue is not empty...
+    while queue.size() > 0:
 
-    # While the stack is not empty...
-    while stack.size() > 0:
-
-        # Remove last element form stack and assign it to path.
-        path = stack.pop()
+        # Remove last element form queue and assign it to path.
+        path = queue.dequeue()
 
         # Point vertex to last vert in path
         vertex = path[-1]
 
-        if len(path) > len(visited):
-            visited = path
-        if len(path) == len(visited):
-            if path[-1] < visited[-1]:
-                visited = path
-
+        if (len(path) >= max_path_len and vertex < earliest_ancestor) or (len(path) > max_path_len):
+            earliest_ancestor = vertex
+            max_path_len = len(path)
         for neighbor in graph.vertices[vertex]:
-            path_copy = path.copy()
+            path_copy = list(path)
             path_copy.append(neighbor)
-            stack.push(path_copy)
-
-    if len(path) == 1:
-        return -1
-
-    return visited[-1]
+            queue.enqueue(path_copy)
+    return earliest_ancestor
